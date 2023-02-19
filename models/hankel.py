@@ -7,6 +7,7 @@ class Hankel:
         # self.stride = int(stride_percent*lag)
 
     def fit(self,X,lag,stride_percent):
+        lag = lag*60
         stride = int(stride_percent*lag)
         hankel = X[:lag].reshape(-1,1)
         for i in range(stride,len(X),stride):
