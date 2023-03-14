@@ -11,14 +11,14 @@ class Rank:
         # Sort the eigenvalues in descending order
         sorted_eigenvalues = np.sort(eigenvalues)[::-1]
 
-        # # Plot the sorted eigenvalues
+        # Plot the sorted eigenvalues
         # plt.plot(np.log(sorted_eigenvalues))
         # plt.xlabel('Eigenvalue Index')
         # plt.ylabel('Eigenvalue')
+        # # plt.xlim(0,2)
         # plt.show()
-
         # Look for the knee in the plot
-        knee_index = np.argmin(np.abs(np.diff(sorted_eigenvalues)))
+        knee_index = np.argmin(np.abs(np.diff(sorted_eigenvalues))) 
 
         # Compute the value of 'r'
         r = np.sum(sorted_eigenvalues[:knee_index + 1] >= threshold)
