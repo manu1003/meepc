@@ -16,7 +16,7 @@ class Cluster:
         for n_clusters in cluster_range:
             kmeans = KMeans(n_clusters=n_clusters, init='k-means++')
             kmeans.fit(X)
-            
+
             # Calculate the silhouette score for this model and store it along with the KMeans object
             score = silhouette_score(X, kmeans.labels_)
             silhouette_scores.append(score)
