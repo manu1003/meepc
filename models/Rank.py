@@ -27,9 +27,11 @@ class Rank:
         # r = np.sum(sorted_eigenvalues[:knee_index + 1] >= threshold)
 
 
-
-        thresh=0.1*sorted_eigenvalues[4]
-        indices=np.where(sorted_eigenvalues>thresh)[0]
-        r=len((list(indices)))
+        if len(sorted_eigenvalues)>4:
+            thresh=0.1*sorted_eigenvalues[4]
+            indices=np.where(sorted_eigenvalues>thresh)[0]
+            r=len((list(indices)))
+        else:
+            r=len(sorted_eigenvalues)-1
         return r
 
