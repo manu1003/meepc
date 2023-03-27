@@ -6,7 +6,7 @@ class Cluster:
         pass
 
     def fit(self,X):
-        cluster_range = range(2, min(6,len(X)))
+        cluster_range = range(2, min(10,len(X)))
 
         # Create empty lists to store the silhouette scores and KMeans objects for each cluster number
         silhouette_scores = []
