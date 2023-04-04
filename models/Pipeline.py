@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import Hankel,Rank,Cluster,Meepc
+from models import Hankel,Rank,Cluster,Meepc
 import warnings
 warnings.simplefilter('ignore')
 import math
@@ -47,8 +47,10 @@ class Pipeline:
     def calc_distances(self,X,optimal_k,weights,centers,clusters_V,clusters_R):
         distances = []
         for i in range(optimal_k):
-            cluster_ = np.matmul(X,clusters_V[i][:,:clusters_R[i]])
-            var1=np.square(cluster_- centers[i])
+            print(type(X))
+            print(type(clusters_V[i][:,:clusters_R[i]]))
+            cluster = np.matmul(X,clusters_V[i][:,:clusters_R[i]])
+            var1=np.square(cluster- centers[i])
             var2=np.matmul(weights[i],var1.T)
             distances.append(np.sqrt(var2))    
         return distances
@@ -103,7 +105,7 @@ class Pipeline:
             radii_attack = self.calc_distances(X_att,optimal_k,weights,centers,clusters_V,clusters_R)
 
             # calculate the thresholds
-            threshold_clusters = self.calc_threshold(optimal_k,radii_normal,radii_attack)
+            threshold_clusters = np.asarray(self.calc_threshold(optimal_k,radii_normal,radii_attack))
 
 
             X_test = self.get_data(test,sens,lag,stride)
@@ -123,6 +125,7 @@ class Pipeline:
             self.precision.append(precision_score(y_actual,y_predicted))
             self.recall(recall_score(y_actual,y_predicted))
             self.fscore(f1_score(y_actual,y_predicted))
+            # return self
             
 
 
