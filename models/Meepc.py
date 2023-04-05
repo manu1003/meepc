@@ -100,7 +100,7 @@ class MEEPC:
                 stored_alpha_old = deepcopy(alpha_old)
                 old = 1
             if updates == 4:
-                if np.all(alpha - stored_alpha_old) < tol :  #.00001
+                if np.all(np.abs(alpha - stored_alpha_old)) < tol :  #.00001
                     converged = True
                 else:
                     updates = 0
