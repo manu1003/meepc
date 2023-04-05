@@ -73,38 +73,71 @@ class MEEPC:
         converged = False
         alpha_old = np.zeros(self.rows)
         old = 0
-            
-        while i < self.rows:
-            if converged:   
-                # return weights
-                return 1/h,centroid
-                # return h,alpha
-            alpha_old[i] = alpha[i]
-            f_x = 0
-            u=0
-            f_x = self.calc_s(h,alpha_old,Z,u,i)
-            
-            if f_x == 1:
-                alpha[i] = u
-            
-            if f_x < 1:
 
-                alpha[i] = 0
+        while not converged:
+            for i in np.random.permutation(self.rows):
+                alpha_old[i] = alpha[i]
+                f_x = 0
+                u=0
+                f_x = self.calc_s(h,alpha_old,Z,u,i)
+                
+                if f_x == 1:
+                    alpha[i] = u
+                
+                if f_x < 1:
 
-            if f_x > 1:
-                alpha[i] = self.helper(h,alpha_old,Z,1,i)
-                    
-            h = h + (alpha[i] - alpha_old[i])*Z[i]
-            i += 1
-            if i>=self.rows-1 :
-                i = 0
-                updates += 1
-                if old == 0:
-                    stored_alpha_old = deepcopy(alpha_old)
-                    old = 1
+                    alpha[i] = 0
+
+                if f_x > 1:
+                    alpha[i] = self.helper(h,alpha_old,Z,1,i)
+                        
+                h = h + (alpha[i] - alpha_old[i])*Z[i]
+                # i += 1
+                # if i>=self.rows-1 :
+                #     i = 0
+            updates += 1
+            if old == 0:
+                stored_alpha_old = deepcopy(alpha_old)
+                old = 1
             if updates == 4:
                 if np.all(alpha - stored_alpha_old) < tol :  #.00001
                     converged = True
                 else:
                     updates = 0
                     stored_alpha_old = deepcopy(alpha)
+        return 1/h,centroid
+            
+        # while i < self.rows:
+        #     if converged:   
+        #         # return weights
+        #         return 1/h,centroid
+        #         # return h,alpha
+        #     alpha_old[i] = alpha[i]
+        #     f_x = 0
+        #     u=0
+        #     f_x = self.calc_s(h,alpha_old,Z,u,i)
+            
+        #     if f_x == 1:
+        #         alpha[i] = u
+            
+        #     if f_x < 1:
+
+        #         alpha[i] = 0
+
+        #     if f_x > 1:
+        #         alpha[i] = self.helper(h,alpha_old,Z,1,i)
+                    
+        #     h = h + (alpha[i] - alpha_old[i])*Z[i]
+        #     i += 1
+        #     if i>=self.rows-1 :
+        #         i = 0
+        #         updates += 1
+        #         if old == 0:
+        #             stored_alpha_old = deepcopy(alpha_old)
+        #             old = 1
+        #     if updates == 4:
+        #         if np.all(alpha - stored_alpha_old) < tol :  #.00001
+        #             converged = True
+        #         else:
+        #             updates = 0
+        #             stored_alpha_old = deepcopy(alpha)
