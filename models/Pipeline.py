@@ -90,7 +90,7 @@ class Pipeline:
         X = X.T
         return X
     
-    def fit(self,train_normal,train_attack,lag,stride,optimal_k = None):
+    def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,tune=True):
 
         self.lag = lag
         self.stride = stride
@@ -110,11 +110,14 @@ class Pipeline:
         self.radii_normal = self.calc_normal_variables(X,kmeans)
         # ,weights,centers,clusters_V,clusters_R
         # use attack data in train data to tune the threshold
-        X_att = self.get_data(train_attack)
-        self.radii_attack = self.calc_distances(X_att)
+        if tune:
+            X_att = self.get_data(train_attack)
+            self.radii_attack = self.calc_distances(X_att)
 
-        # calculate the thresholds
-        self.threshold_clusters = np.asarray(self.calc_threshold())
+            # calculate the thresholds
+            self.threshold_clusters = np.asarray(self.calc_threshold())
+        else:
+            self.threshold_clusters = np.max(np.array(self.radii_normal))
 
     
     def predict(self,X_test):
