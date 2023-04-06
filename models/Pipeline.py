@@ -43,9 +43,7 @@ class Pipeline:
         fp = np.cumsum(neg_temp)
         fn = tp[-1] - tp
         fmeas = 2*tp / (2*tp + fp + fn)
-        # print(fmeas)
         idx = np.argmax(fmeas)
-        # print(indices[idx])
         return radiis[indices[idx]]
     
     def calc_threshold(self):

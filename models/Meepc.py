@@ -58,7 +58,7 @@ class MEEPC:
         if u_old == u:
             u = self.binary(h,alpha_old,Z,i,0,1)
         else:
-            u = self.binary(h,alpha_old,Z,i,u_old,u)
+            u = self.binary(h,alpha_old,Z,i,u_old,u)    
         return u
 
     def fit(self,X,tol=1e-05):
