@@ -90,7 +90,7 @@ class Pipeline:
         X = X.T
         return X
     
-    def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,tune=True):
+    def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True):
 
         self.lag = lag
         self.stride = stride
@@ -101,7 +101,7 @@ class Pipeline:
         X = self.get_data(train_normal)
         # ,sens)
         if not optimal_k:
-            kmeans,optimal_k = self.cluster.fit(X)
+            kmeans,optimal_k = self.cluster.fit(X,kscore_init)
             kmeans.fit(X)
         else:
             kmeans = KMeans(n_clusters=optimal_k,init='k-means++')
