@@ -117,7 +117,7 @@ class Pipeline:
             # calculate the thresholds
             self.threshold_clusters = np.asarray(self.calc_threshold())
         else:
-            self.threshold_clusters = np.max(np.array(self.radii_normal))
+            self.threshold_clusters = np.asarray([np.max(self.radii_normal[i]) for i in range(self.optimal_k)])
 
     
     def predict(self,X_test):
@@ -139,7 +139,6 @@ class Pipeline:
     
 
         
-
         # self.accuracy.append(accuracy_score(y_actual,y_predicted))
         # self.precision.append(precision_score(y_actual,y_predicted))
         # self.recall(recall_score(y_actual,y_predicted))
