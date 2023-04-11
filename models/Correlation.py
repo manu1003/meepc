@@ -2,7 +2,7 @@ import numpy as np
 class Correlation:
     def __init__(self) -> None:
         pass
-    def fit(self,X,sensor):
+    def fit(self,X):
         means = X.mean(axis=0)
         M = X-means
         S = np.matmul(M.T,M)
@@ -12,4 +12,4 @@ class Correlation:
             for j in range(len(S)):
                 S[i][j]/=l[i]
                 S[i][j]/=l[j]
-        return S[sensor]
+        return S

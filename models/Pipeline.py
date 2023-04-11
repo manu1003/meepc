@@ -84,13 +84,15 @@ class Pipeline:
         return radii_normal
     # ,weights,centers,clusters_V,clusters_R
     
-    def get_data(self,X):
+    def get_data(self,X,corr=None):
         # X = df.iloc[:,sens].values
         X = self.hankel.fit(X,self.lag,self.stride)
+        if(corr is not None):
+            X=np.concatenate((X,corr),axis=0)
         X = X.T
         return X
     
-    def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True):
+    def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True,corr=None):
 
         self.lag = lag
         self.stride = stride
@@ -98,7 +100,7 @@ class Pipeline:
         # for sens in range(len(train_normal.columns)):
 
         # train on normal data and get all required variables on it
-        X = self.get_data(train_normal)
+        X = self.get_data(train_normal,corr)
         # ,sens)
         if not optimal_k:
             kmeans,optimal_k = self.cluster.fit(X,kscore_init)
@@ -120,9 +122,9 @@ class Pipeline:
             self.threshold_clusters = np.asarray([np.max(self.radii_normal[i]) for i in range(self.optimal_k)])
 
     
-    def predict(self,X_test):
+    def predict(self,X_test,corr=None):
 
-        X_test = self.get_data(X_test)
+        X_test = self.get_data(X_test,corr)
         radii_test = self.calc_distances(X_test)
         self.radii_test = np.transpose(np.vstack(radii_test))
 
