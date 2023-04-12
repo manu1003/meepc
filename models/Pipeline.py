@@ -32,19 +32,26 @@ class Pipeline:
         # pass
 
     def tune_threshold(self,radii_n,radii_a):
-        label = [1]*len(radii_n) + [-1]*len(radii_a)
+        label = [-1]*len(radii_n) + [1]*len(radii_a)
         label = np.array(label)
         radiis = np.array(list(radii_n)+list(radii_a))
         indices = np.argsort(radiis)
         label = label[indices]
         pos_temp = (1+label)//2
         neg_temp = (1-label)//2
-        tp = np.cumsum(pos_temp)
-        fp = np.cumsum(neg_temp)
-        fn = tp[-1] - tp
+        n_pos = len(radii_a)
+        n_neg = len(radii_n)
+        fn = np.cumsum(pos_temp)
+        tp = n_pos - fn
+        fp = n_neg - np.cumsum(neg_temp)
+
+        # tp = np.cumsum(pos_temp)
+        # fp = np.cumsum(neg_temp)
+        # fn = tp[-1] - tp
         fmeas = 2*tp / (2*tp + fp + fn)
         idx = np.argmax(fmeas)
-        return radiis[indices[idx]]
+        # return min( np.max( radii_n ), radiis[indices[idx]] )
+        return np.max( radii_n )
     
     def calc_threshold(self):
         threshold_clusters = [0]*self.optimal_k
@@ -87,12 +94,12 @@ class Pipeline:
     def get_data(self,X,corr=None):
         # X = df.iloc[:,sens].values
         X = self.hankel.fit(X,self.lag,self.stride)
-        if(corr is not None):
+        if (corr is not None):
             X=np.concatenate((X,corr),axis=0)
         X = X.T
         return X
     
-    def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True,corr=None):
+    def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True,corr_normal=None,corr_attack=None):
 
         self.lag = lag
         self.stride = stride
@@ -100,7 +107,7 @@ class Pipeline:
         # for sens in range(len(train_normal.columns)):
 
         # train on normal data and get all required variables on it
-        X = self.get_data(train_normal,corr)
+        X = self.get_data(train_normal,corr_normal)
         # ,sens)
         if not optimal_k:
             kmeans,optimal_k = self.cluster.fit(X,kscore_init)
@@ -113,7 +120,7 @@ class Pipeline:
         # ,weights,centers,clusters_V,clusters_R
         # use attack data in train data to tune the threshold
         if tune:
-            X_att = self.get_data(train_attack)
+            X_att = self.get_data(train_attack,corr_attack)
             self.radii_attack = self.calc_distances(X_att)
 
             # calculate the thresholds
