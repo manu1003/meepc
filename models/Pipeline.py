@@ -51,8 +51,8 @@ class Pipeline:
         fmeas = 2*tp / (2*tp + fp + fn)
         idx = np.argmax(fmeas)
         # return min( np.max( radii_n ), radiis[indices[idx]] )
-        return np.max( radii_n )
-    
+        return radiis[indices[idx]]
+            
     def calc_threshold(self):
         threshold_clusters = [0]*self.optimal_k
         for i in range(self.optimal_k):
