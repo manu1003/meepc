@@ -1,15 +1,13 @@
 import numpy as np
-from models import Hankel,Correlation
+from models import Correlation
 class Corrhankel:
     def __init__(self) -> None:
-        self.hankel = Hankel()
         self.corr = Correlation()
         pass
 
     def fit(self,X,lag,stride=0.5):
         # lag = lag*60
         stride = int(stride*lag)
-        # hankel = self.hankel.fit(X[:,sensor],lag,stride)
         corr = self.corr.fit(X[:lag])
         no_of_lags=1
         for i in range(stride,len(X),stride):
