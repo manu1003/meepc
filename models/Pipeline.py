@@ -48,7 +48,7 @@ class Pipeline:
         # tp = np.cumsum(pos_temp)
         # fp = np.cumsum(neg_temp)
         # fn = tp[-1] - tp
-        fmeas = 2*tp / (2*tp + fp + fn)
+        fmeas = (2*tp )/ (2*tp + fp + fn)
         idx = np.argmax(fmeas)
         # return min( np.max( radii_n ), radiis[indices[idx]] )
         return radiis[indices[idx]]
@@ -82,6 +82,7 @@ class Pipeline:
             V = VT.T
             self.clusterV.append(V)
             cluster_ = np.matmul(cluster_,V[:,:r])
+           
             weight,center = self.meepc.fit(cluster_)
             self.weights.append(weight)
             self.centers.append(center)
