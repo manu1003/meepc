@@ -18,8 +18,6 @@ class Rank:
         # # plt.xlim(0,2)
         # plt.show()
 
-
-
         # Look for the knee in the plot
         # knee_index = np.argmin(np.abs(np.diff(sorted_eigenvalues)))
 

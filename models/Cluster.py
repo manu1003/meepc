@@ -28,7 +28,7 @@ class Cluster:
                     score_val = kmeans.inertia_
                 else:
                     raise ValueError('Invalid score parameter. Choose from "silhouette", or "inertia"')
-                
+
                 score_vals.append(score_val)
                 kmeans_objects.append(kmeans)
 

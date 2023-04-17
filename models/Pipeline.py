@@ -13,7 +13,6 @@ class Pipeline:
         self.meepc = Meepc.MEEPC()
         self.lag = None
         self.stride = None
-        self.only_corr = False
         self.optimal_k = None
         self.weights = []
         self.centers = []
@@ -53,29 +52,25 @@ class Pipeline:
         idx = np.argmax(fmeas)
         # return min( np.max( radii_n ), radiis[indices[idx]] )
         return radiis[indices[idx]]
-    
-            
+
+
     def calc_threshold(self):
         threshold_clusters = [0]*self.optimal_k
         for i in range(self.optimal_k):
             threshold_clusters[i] = self.tune_threshold(self.radii_normal[i],self.radii_attack[i])
         return threshold_clusters
-    
+
     def calc_distances(self,X):
         distances = []
         for i in range(self.optimal_k):
             cluster = np.matmul(X,self.clusterV[i][:,:self.clusterR[i]])
             var1=np.square(cluster - self.centers[i])
             var2=np.matmul(self.weights[i],var1.T)
-            distances.append(np.sqrt(var2))    
-        return distances    
-    
+            distances.append(np.sqrt(var2))
+        return distances
+
     def calc_normal_variables(self,X,kmeans):
         radii_normal = []
-        # weights=[]
-        # centers=[]
-        # clusters_R=[]
-        # clusters_V=[]
         for i in range(self.optimal_k):
             cluster_ = X[np.where(kmeans.labels_ == i)[0]]
             r = self.rank.fit(cluster_)
@@ -84,7 +79,7 @@ class Pipeline:
             V = VT.T
             self.clusterV.append(V)
             cluster_ = np.matmul(cluster_,V[:,:r])
-           
+
             weight,center = self.meepc.fit(cluster_)
             self.weights.append(weight)
             self.centers.append(center)
@@ -92,45 +87,57 @@ class Pipeline:
             var2=np.matmul(weight,var1.T)
             radii_normal.append(np.sqrt(var2))
         return radii_normal
-    # ,weights,centers,clusters_V,clusters_R
-    
-    def get_data(self,X,corr=None):
-        if self.only_corr:
+
+
+    def get_data(self,X,corr=None,only_corr=False):
+        if only_corr:
             if corr is not None:
+                X = self.hankel.fit(X,self.lag,self.stride)
+                mini=X.min(axis=0).reshape(1,-1)
+                maxi=X.max(axis=0).reshape(1,-1)
+                avg=X.mean(axis=0).reshape(1,-1)
+                corr=np.concatenate((corr,mini),axis=0)
+                corr=np.concatenate((corr,maxi),axis=0)
+                corr=np.concatenate((corr,avg),axis=0)
                 return corr.T
             else:
                 print('No correlation matrix given to create hankel')
-                return 
+                return
         # X = df.iloc[:,sens].values
         X = self.hankel.fit(X,self.lag,self.stride)
         if (corr is not None):
             X=np.concatenate((X,corr),axis=0)
         X = X.T
         return X
-    
+
     def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True,corr_normal=None,
             corr_attack=None,only_corr=False):
 
         self.lag = lag
         self.stride = stride
-        self.only_corr = only_corr
+
         # for sens in range(len(train_normal.columns)):
 
         # train on normal data and get all required variables on it
-        X = self.get_data(train_normal,corr_normal)
+        X = self.get_data(train_normal,corr_normal,only_corr)
         # ,sens)
         if not optimal_k:
             kmeans,optimal_k = self.cluster.fit(X,kscore_init)
             kmeans.fit(X)
         else:
-            kmeans = KMeans(n_clusters=optimal_k,init='k-means++')
-            kmeans.fit(X)
+            if len(np.unique(X))!=1:
+                kmeans = KMeans(n_clusters=optimal_k,init='k-means++')
+                kmeans.fit(X)
+            else:
+                kmeans=KMeans(n_clusters=1,init='k-means++')
+                kmeans.fit(X)
+                optimal_k=1
         self.optimal_k = optimal_k
         self.radii_normal = self.calc_normal_variables(X,kmeans)
         # ,weights,centers,clusters_V,clusters_R
         # use attack data in train data to tune the threshold
         if tune:
-            X_att = self.get_data(train_attack,corr_attack)
+            X_att = self.get_data(train_attack,corr_attack,only_corr)
             self.radii_attack = self.calc_distances(X_att)
 
             # calculate the thresholds
@@ -138,10 +145,10 @@ class Pipeline:
         else:
             self.threshold_clusters = np.asarray([np.max(self.radii_normal[i]) for i in range(self.optimal_k)])
 
-    
-    def predict(self,X_test,corr_test=None):
 
-        X_test = self.get_data(X_test,corr_test)
+    def predict(self,X_test,corr_test=None,only_corr=False):
+
+        X_test = self.get_data(X_test,corr_test,only_corr)
         radii_test = self.calc_distances(X_test)
         self.radii_test = np.transpose(np.vstack(radii_test))
 
@@ -155,21 +162,21 @@ class Pipeline:
         self.y_predicted = np.all(self.check_anomaly<0,axis=1).astype(int)
 
         return self.y_predicted
-    
 
-        
+
+
         # self.accuracy.append(accuracy_score(y_actual,y_predicted))
         # self.precision.append(precision_score(y_actual,y_predicted))
         # self.recall(recall_score(y_actual,y_predicted))
         # self.fscore(f1_score(y_actual,y_predicted))
         # return self
-            
 
 
-            
 
 
-            
 
-        
+
+
+
+
 
