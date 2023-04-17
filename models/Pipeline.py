@@ -3,6 +3,7 @@ from models import Hankel,Rank,Cluster,Meepc
 import warnings
 warnings.simplefilter('ignore')
 from sklearn.cluster import KMeans
+from gekko import GEKKO
 # from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 class Pipeline:
@@ -31,6 +32,36 @@ class Pipeline:
         # self.recall = []
         # self.fscore = []
         # pass
+
+    def getCenter(self,X):
+        A=((X.max(axis=0)-X.min(axis=0))/2)+0.00001
+        C=(X.max(axis=0)+X.min(axis=0))/2
+        return A,C
+
+
+    def getW(self,X):
+        N=X.shape[0]
+        d=X.shape[1]
+        m = GEKKO(remote=False)
+        m.options.MAX_ITER=1000
+        w = m.Array(m.Var,d,lb=0)
+    #    X_nor_sig=np.copy(X)
+        A,C = self.getCenter(X)
+        for i in range(d):
+            w[i].value=(2*A[i])**-0.5
+        X_centred=(X-C)**2
+        for i in range(N):
+            m.Equation(np.dot(w,X_centred[i])<=1)
+        prod=w[0]
+        for i in range(d-1):
+            prod=prod*w[i+1]
+        m.Obj(prod**-0.5)
+        m.solve(disp=False)
+        weight=np.zeros(d,dtype=float)
+        for i in range(len(weight)):
+            weight[i]=w[i].value[0]
+
+        return weight,C
 
     def tune_threshold(self,radii_n,radii_a):
         label = [-1]*len(radii_n) + [1]*len(radii_a)
@@ -80,8 +111,10 @@ class Pipeline:
             V = VT.T
             self.clusterV.append(V)
             cluster_ = np.matmul(cluster_,V[:,:r])
-
-            weight,center = self.meepc.fit(cluster_)
+            if self.use_gekko:
+                weight,center = self.getW(cluster_)
+            else:
+                weight,center = self.meepc.fit(cluster_)
             self.weights.append(weight)
             self.centers.append(center)
             var1=np.square(cluster_-center)
@@ -112,11 +145,12 @@ class Pipeline:
         return X
 
     def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True,corr_normal=None,
-            corr_attack=None,only_corr=False):
+            corr_attack=None,only_corr=False,use_gekko=False):
 
         self.lag = lag
         self.stride = stride
         self.only_corr = only_corr
+        self.use_gekko = use_gekko
         # for sens in range(len(train_normal.columns)):
 
         # train on normal data and get all required variables on it
