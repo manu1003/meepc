@@ -13,6 +13,7 @@ class Pipeline:
         self.meepc = Meepc.MEEPC()
         self.lag = None
         self.stride = None
+        self.only_corr = False
         self.optimal_k = None
         self.weights = []
         self.centers = []
@@ -93,8 +94,8 @@ class Pipeline:
         return radii_normal
     # ,weights,centers,clusters_V,clusters_R
     
-    def get_data(self,X,corr=None,only_corr=False):
-        if only_corr:
+    def get_data(self,X,corr=None):
+        if self.only_corr:
             if corr is not None:
                 return corr.T
             else:
@@ -112,11 +113,11 @@ class Pipeline:
 
         self.lag = lag
         self.stride = stride
-
+        self.only_corr = only_corr
         # for sens in range(len(train_normal.columns)):
 
         # train on normal data and get all required variables on it
-        X = self.get_data(train_normal,corr_normal,only_corr)
+        X = self.get_data(train_normal,corr_normal)
         # ,sens)
         if not optimal_k:
             kmeans,optimal_k = self.cluster.fit(X,kscore_init)
@@ -129,7 +130,7 @@ class Pipeline:
         # ,weights,centers,clusters_V,clusters_R
         # use attack data in train data to tune the threshold
         if tune:
-            X_att = self.get_data(train_attack,corr_attack,only_corr)
+            X_att = self.get_data(train_attack,corr_attack)
             self.radii_attack = self.calc_distances(X_att)
 
             # calculate the thresholds
@@ -138,9 +139,9 @@ class Pipeline:
             self.threshold_clusters = np.asarray([np.max(self.radii_normal[i]) for i in range(self.optimal_k)])
 
     
-    def predict(self,X_test,corr_test=None,only_corr=False):
+    def predict(self,X_test,corr_test=None):
 
-        X_test = self.get_data(X_test,corr_test,only_corr)
+        X_test = self.get_data(X_test,corr_test)
         radii_test = self.calc_distances(X_test)
         self.radii_test = np.transpose(np.vstack(radii_test))
 
