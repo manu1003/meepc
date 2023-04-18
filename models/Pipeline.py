@@ -160,13 +160,9 @@ class Pipeline:
             kmeans,optimal_k = self.cluster.fit(X,kscore_init)
             kmeans.fit(X)
         else:
-            if len(np.unique(X))!=1:
-                kmeans = KMeans(n_clusters=optimal_k,init='k-means++')
-                kmeans.fit(X)
-            else:
-                kmeans=KMeans(n_clusters=1,init='k-means++')
-                kmeans.fit(X)
-                optimal_k=1
+            optimal_k = min(optimal_k,len(np.unique(X)))
+            kmeans = KMeans(n_clusters=optimal_k,init='k-means++')
+            kmeans.fit(X)
         self.optimal_k = optimal_k
         self.radii_normal = self.calc_normal_variables(X,kmeans)
         # ,weights,centers,clusters_V,clusters_R

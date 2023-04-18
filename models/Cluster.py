@@ -10,7 +10,7 @@ class Cluster:
             kmeans = KMeans(n_clusters=1, init='k-means++')
             return kmeans.fit(X), 1
 
-        cluster_range = range(1, min(10, len(X)))
+        cluster_range = range(1, min(10, len(np.unique(X))))
 
         # Create empty lists to store the score values and KMeans objects for each cluster number
         score_vals = []
