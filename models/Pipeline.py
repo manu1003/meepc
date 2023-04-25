@@ -42,6 +42,7 @@ class Pipeline:
     def getW(self,X):
         N=X.shape[0]
         d=X.shape[1]
+        print(N,d)
         m = GEKKO(remote=False)
         m.options.MAX_ITER=1000
         w = m.Array(m.Var,d,lb=0)
@@ -55,12 +56,11 @@ class Pipeline:
         prod=w[0]
         for i in range(d-1):
             prod=prod*w[i+1]
-        m.Obj(prod**-0.5)
+        m.Obj(prod)
         m.solve(disp=False)
         weight=np.zeros(d,dtype=float)
         for i in range(len(weight)):
             weight[i]=w[i].value[0]
-
         return weight,C
 
     def tune_threshold(self,radii_n,radii_a):
@@ -76,10 +76,6 @@ class Pipeline:
         fn = np.cumsum(pos_temp)
         tp = n_pos - fn
         fp = n_neg - np.cumsum(neg_temp)
-
-        # tp = np.cumsum(pos_temp)
-        # fp = np.cumsum(neg_temp)
-        # fn = tp[-1] - tp
         fmeas = (2*tp )/ (2*tp + fp + fn)
         idx = np.argmax(fmeas)
         # return min( np.max( radii_n ), radiis[indices[idx]] )
@@ -146,7 +142,6 @@ class Pipeline:
 
     def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True,corr_normal=None,
             corr_attack=None,only_corr=False,use_gekko=False):
-
         self.lag = lag
         self.stride = stride
         self.only_corr = only_corr
@@ -164,6 +159,7 @@ class Pipeline:
             kmeans = KMeans(n_clusters=optimal_k,init='k-means++')
             kmeans.fit(X)
         self.optimal_k = optimal_k
+        print("optimalK",optimal_k)
         self.radii_normal = self.calc_normal_variables(X,kmeans)
         # ,weights,centers,clusters_V,clusters_R
         # use attack data in train data to tune the threshold
@@ -193,14 +189,6 @@ class Pipeline:
         self.y_predicted = np.all(self.check_anomaly<0,axis=1).astype(int)
 
         return self.y_predicted
-
-
-
-        # self.accuracy.append(accuracy_score(y_actual,y_predicted))
-        # self.precision.append(precision_score(y_actual,y_predicted))
-        # self.recall(recall_score(y_actual,y_predicted))
-        # self.fscore(f1_score(y_actual,y_predicted))
-        # return self
 
 
 
