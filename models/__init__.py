@@ -5,3 +5,4 @@ from .Rank import Rank
 from .Pipeline import Pipeline
 from .Correlation import Correlation
 from .Corrhankel import Corrhankel
+from .Robustcluster import Robustcluster

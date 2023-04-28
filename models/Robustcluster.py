@@ -11,22 +11,28 @@ class Robustcluster:
         alpha = round(alpha_factor*len(X))
         # Initialize centroids randomly
         centroid_old = X[np.random.choice(range(len(X)), optimal_k)]
-        centroid_new = np.arange(optimal_k)
+        # print(centroid_old,'\n')
+        centroid_new = deepcopy(centroid_old)
         converged = False
         while not converged:
             # Assign data points to the nearest centroid
-            distances = np.sqrt(((X - centroid_old[:,np.newaxis])**2))
+            distances = np.sqrt(np.sum((X - centroid_old[:,np.newaxis])**2,axis=2))
+            # print(distances,'\n')
             idx = np.argsort(np.min(distances,axis=0))
+            # print(idx,'\n')
             labels = np.argmin(distances,axis=0)
+            # print(labels,'\n')
             labels_new = labels[idx[:-alpha]]
+            # print(labels_new,'\n')
             X_new = X[idx[:-alpha]]
+            # print(X_new,'\n')
             for i in range(optimal_k):
-                centroid_new[i] = np.mean(X_new[labels_new==i])
+                centroid_new[i] = np.mean(X_new[labels_new==i],axis=0)
 
-            if np.all(centroid_new-centroid_old) <= tol:
+            if np.all(np.all(centroid_new-centroid_old,axis=1) <= tol):
                 converged = True
             centroid_old = deepcopy(centroid_new)
-
+        # print(centroid_new)
         return centroid_old,labels
 
             
