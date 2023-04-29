@@ -1,5 +1,5 @@
 import numpy as np
-from models import Hankel,Rank,Cluster,Meepc
+from models import Hankel,Rank,Cluster,MEEPC
 import warnings
 warnings.simplefilter('ignore')
 from sklearn.cluster import KMeans
@@ -11,7 +11,7 @@ class Pipeline:
         self.hankel = Hankel()
         self.rank = Rank()
         self.cluster = Cluster()
-        self.meepc = Meepc.MEEPC()
+        self.meepc = MEEPC()
         self.lag = None
         self.stride = None
         self.only_corr = False
