@@ -159,7 +159,7 @@ class Pipeline:
             kmeans = KMeans(n_clusters=optimal_k,init='k-means++')
             kmeans.fit(X)
         self.optimal_k = optimal_k
-        print("optimalK",optimal_k)
+        # print("optimalK",optimal_k)
         self.radii_normal = self.calc_normal_variables(X,kmeans)
         # ,weights,centers,clusters_V,clusters_R
         # use attack data in train data to tune the threshold

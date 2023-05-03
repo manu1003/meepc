@@ -7,7 +7,7 @@ class Robustcluster:
     def __init__(self) -> None:
         pass
 
-    def fit(self,X,optimal_k,alpha_factor,tol=.001):
+    def fit(self,X,optimal_k,alpha_factor,tol=1e-4):
         alpha = round(alpha_factor*len(X))
         # Initialize centroids randomly
         centroid_old = X[np.random.choice(range(len(X)), optimal_k)]
