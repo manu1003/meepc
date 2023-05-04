@@ -7,8 +7,8 @@ class Rank:
     def fit(self,X,threshold=10):
         # Compute the eigenvalues and eigenvectors of the matrix
         eigenvalues, eigenvectors = np.linalg.eig(np.matmul(X, X.T))
-        print("eigen values")
-        print(eigenvalues)
+        # print("eigen values")
+        # print(eigenvalues)
         # Sort the eigenvalues in descending order
         sorted_eigenvalues = np.sort(eigenvalues)[::-1]
 
