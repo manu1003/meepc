@@ -19,7 +19,8 @@ class Robustmeepc:
             radii = np.sqrt(np.matmul(weight,var1.T))
             idx = np.setdiff1d(np.arange(len(X)),np.argsort(radii)[-beta:])
             X = X[idx]
-        return radii
+        weight,center = self.meepc.fit(X)
+        return weight,center
             
 
 
