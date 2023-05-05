@@ -6,7 +6,7 @@ class RobustPCA:
       pass
 
   def fit(self,X, r, alpha, max_iter=1000, tol=1e-4):
-      n, d = X.shapes
+      n, d = X.shape
       alpha=int(alpha*n)
       U, Sigma, VT = svd(X)
       X_hat = np.dot(U[:, :r], np.dot( np.diag(Sigma[:r]) , VT[:r, :]))
@@ -15,7 +15,7 @@ class RobustPCA:
       V_old=VT
       for i in range(max_iter):
           # Set aside alpha fraction
-          inactive_idx = np.argsort(err)[-alpha:]
+          inactive_idx = np.setdiff1d(np.arange(n), np.argsort(err)[:alpha])
           X_inactive = X[inactive_idx, :]
 
 
@@ -30,10 +30,10 @@ class RobustPCA:
 
           # reconstruction error of inactive points
           U_inactive=(np.linalg.pinv(np.diag(Sigma_new[:r])) @ VT_new[:r, :] @ X_inactive.T).T
-          E_inactive = U_inactive - X_inactive
+          E_inactive = U_inactive @ np.diag(Sigma_new[:r]) @ VT_new[:r, :] - X_inactive
 
           # Check convergence
-          if(np.allclose(V_old,VT_new,atol=tol)):
+          if(np.all(np.all(V_old-VT_new,axis=1)<=tol)):
               break
 
           # Updation
@@ -41,4 +41,4 @@ class RobustPCA:
           X = np.concatenate((X_active,X_inactive),axis=0)
           V_old=deepcopy(VT_new)
 
-      return X_active,V_old ######return?
+      return X_active,V_old

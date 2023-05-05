@@ -7,3 +7,5 @@ from .Correlation import Correlation
 from .Corrhankel import Corrhankel
 from .Robustcluster import Robustcluster
 from .RobustPCA import RobustPCA
+from .Robustmeepc import Robustmeepc
+from .RobustPipeline import RobustPipeline

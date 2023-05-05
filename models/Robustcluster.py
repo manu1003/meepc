@@ -35,9 +35,9 @@ class Robustcluster:
         # print(centroid_new)
         return centroid_old,labels
 
-            
-            
 
-        
+
+
+
 
 
