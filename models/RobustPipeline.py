@@ -101,6 +101,7 @@ class RobustPipeline:
         for i in range(self.optimal_k):
             cluster_ = X[np.where(self.labels == i)[0]]
             r = self.rank.fit(cluster_)
+            # r = 3
             self.clusterR.append(r)
             VT = self.pca.fit(cluster_,r,alpha)
             print("pca done")
@@ -155,6 +156,7 @@ class RobustPipeline:
         # ,sens)
         optimal_k = min(optimal_k,len(np.unique(X)))
         center,self.labels = self.robustcluster.fit(X,optimal_k,alpha)
+        print('clustering done')
         self.optimal_k = optimal_k
         # print("optimalK",optimal_k)
         self.radii_normal = self.calc_normal_variables(X,alpha)
