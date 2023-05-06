@@ -103,13 +103,16 @@ class RobustPipeline:
             r = self.rank.fit(cluster_)
             self.clusterR.append(r)
             VT = self.pca.fit(cluster_,r,alpha)
+            print("pca done")
+            print("R value",r)
             V = VT.T
             self.clusterV.append(V)
             cluster_ = np.matmul(cluster_,V[:,:r])
             if self.use_gekko:
                 weight,center = self.getW(cluster_)
             else:
-                weight,center = self.meepc.fit(cluster_)
+                weight,center = self.meepc.fit(cluster_,alpha)
+            print("meepc done")
             self.weights.append(weight)
             self.centers.append(center)
             var1=np.square(cluster_-center)
@@ -152,7 +155,6 @@ class RobustPipeline:
         # ,sens)
         optimal_k = min(optimal_k,len(np.unique(X)))
         center,self.labels = self.robustcluster.fit(X,optimal_k,alpha)
-        self.centers=center
         self.optimal_k = optimal_k
         # print("optimalK",optimal_k)
         self.radii_normal = self.calc_normal_variables(X,alpha)
@@ -169,7 +171,6 @@ class RobustPipeline:
 
 
     def predict(self,X_test,corr_test=None):
-
         X_test = self.get_data(X_test,corr_test)
         radii_test = self.calc_distances(X_test)
         self.radii_test = np.transpose(np.vstack(radii_test))

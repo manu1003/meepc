@@ -21,6 +21,6 @@ class Robustmeepc:
             X = X[idx]
         weight,center = self.meepc.fit(X)
         return weight,center
-            
+
 
 
