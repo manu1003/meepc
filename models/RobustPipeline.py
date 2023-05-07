@@ -18,6 +18,7 @@ class RobustPipeline:
         self.stride = None
         self.only_corr = False
         self.optimal_k = None
+        self.cluster_centers = None
         self.labels=None
         self.weights = []
         self.centers = []
@@ -98,7 +99,7 @@ class RobustPipeline:
 
     def calc_normal_variables(self,X,alpha):
         radii_normal = []
-        for i in range(self.optimal_k):
+        for i in np.unique(self.labels):
             cluster_ = X[np.where(self.labels == i)[0]]
             r = self.rank.fit(cluster_)
             # r = 3
@@ -155,9 +156,9 @@ class RobustPipeline:
         X = self.get_data(train_normal,corr_normal)
         # ,sens)
         optimal_k = min(optimal_k,len(np.unique(X)))
-        center,self.labels = self.robustcluster.fit(X,optimal_k,alpha)
+        self.cluster_centers,self.labels = self.robustcluster.fit(X,optimal_k,alpha)
         print('clustering done')
-        self.optimal_k = optimal_k
+        self.optimal_k = len(np.unique(self.labels))
         # print("optimalK",optimal_k)
         self.radii_normal = self.calc_normal_variables(X,alpha)
         # ,weights,centers,clusters_V,clusters_R

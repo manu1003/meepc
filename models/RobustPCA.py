@@ -7,12 +7,15 @@ class RobustPCA:
 
   def fit(self,X, r, alpha, max_iter=1000, tol=1e-4):
       n, d = X.shape
+      print('n: ',n)
       alpha=int(alpha*n)
       U, Sigma, VT = svd(X)
       X_hat = U[:, :r]@ np.diag(Sigma[:r]) @ VT[:r, :]
       E = X - X_hat
       err = np.linalg.norm(E, axis=1) #reconstruction error
       V_old=VT
+      if alpha == 0:
+         return V_old
       for i in range(max_iter):
 
         # Set aside alpha fraction
@@ -22,8 +25,8 @@ class RobustPCA:
 
         # indices of active pts.
         active_idx = np.setdiff1d(np.arange(n), inactive_idx)
-        X_active=X[active_idx, :]
-
+        X_active = X[active_idx, :]
+        print(X_active.shape)
         U_new, Sigma_new, VT_new = svd(X_active)
         X_hat_active = np.dot(U_new[:, :r] , np.dot(np.diag(Sigma_new[:r]) , VT_new[:r, :]))
 

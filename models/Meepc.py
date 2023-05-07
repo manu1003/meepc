@@ -62,7 +62,7 @@ class MEEPC:
         return u
 
     def fit(self,X,tol=1e-05):
-        print(X.shape)
+        # print(X.shape)
         self.X = X
         self.rows,self.cols = X.shape
         centroid = self.calc_centroid()
