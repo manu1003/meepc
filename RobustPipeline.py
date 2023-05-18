@@ -31,7 +31,7 @@ class RobustPipeline:
         self.check_anomaly = None
         self.y_predicted = None
         self.y_score = None
-        self.y_train= None
+        self.y_train = None
 
 
     def getCenter(self,X):
@@ -105,22 +105,17 @@ class RobustPipeline:
             r = self.rank.fit(cluster_)
             # r = 3
             self.clusterR.append(r)
-            if self.y_train is not None:
-                VT = self.pca.fit(cluster_,r,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
-            else:
-                VT = self.pca.fit(cluster_,r,alpha)
-            print("               PCA done")
+            VT = self.pca.fit(cluster_,r,alpha)
+            print("pca done")
+            print("R value",r)
             V = VT.T
             self.clusterV.append(V)
             cluster_ = np.matmul(cluster_,V[:,:r])
             if self.use_gekko:
                 weight,center = self.getW(cluster_)
             else:
-                if self.y_train is not None:
-                    weight,center = self.meepc.fit(cluster_,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
-                else:
-                    weight,center = self.meepc.fit(cluster_,alpha)
-            print("               Meepc done")
+                weight,center = self.meepc.fit(cluster_,alpha)
+            print("meepc done")
             self.weights.append(weight)
             self.centers.append(center)
             var1=np.square(cluster_-center)
@@ -154,27 +149,23 @@ class RobustPipeline:
         return X
 
     def fit(self,train_normal,train_attack,lag,stride,optimal_k = None,kscore_init='silhouette',tune=True,corr_normal=None,
-            corr_attack=None,only_corr=False,use_gekko=False,alpha=None,y_truth=None):
+            corr_attack=None,only_corr=False,use_gekko=False,alpha=None,y_truth=None,safe_idx=None,attack_idx=None):
         self.lag = lag
         self.stride = stride
         self.only_corr = only_corr
         self.use_gekko = use_gekko
-
+        # for sens in range(len(train_normal.columns)):
 
         # train on normal data and get all required variables on it
         X = self.get_data(train_normal,corr_normal,y_truth=y_truth)
         # ,sens)
         optimal_k = min(optimal_k,len(np.unique(X)))
-        if y_truth is not None:
-            self.cluster_centers,self.labels = self.robustcluster.fit(X,optimal_k,alpha,Labels = self.y_train)
-        else:
-            self.cluster_centers,self.labels = self.robustcluster.fit(X,optimal_k,alpha)
-
-        print("Clustering Done")
+        self.cluster_centers,self.labels = self.robustcluster.fit(X,optimal_k,alpha,y_train=self.y_train)
+        print('clustering done')
         self.optimal_k = len(np.unique(self.labels))
-
+        # print("optimalK",optimal_k)
         self.radii_normal = self.calc_normal_variables(X,alpha)
-
+        # ,weights,centers,clusters_V,clusters_R
         # use attack data in train data to tune the threshold
         if tune:
             X_att = self.get_data(train_attack,corr_attack)

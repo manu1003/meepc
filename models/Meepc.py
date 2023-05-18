@@ -14,10 +14,10 @@ class MEEPC:
         col_min = np.amin(self.X,axis=0)
         centroid = (col_max + col_min)/2
         return centroid
-    
+
     def calc_Z(self,centroid):
         return (self.X-centroid)**2
-    
+
     def calc_alpha(self):
         return (1.0 / self.rows) * np.ones(self.rows)
 
@@ -51,14 +51,14 @@ class MEEPC:
 
     def helper(self,h,alpha_old,Z,u,i):
         u_old=u # this 0.00001 is step which i am decreasing the u for binary search..
-        
+
         while(self.calc_s(h,alpha_old,Z,u,i)>1):
             u_old = u
-            u*=2        
+            u*=2
         if u_old == u:
             u = self.binary(h,alpha_old,Z,i,0,1)
         else:
-            u = self.binary(h,alpha_old,Z,i,u_old,u)    
+            u = self.binary(h,alpha_old,Z,i,u_old,u)
         return u
 
     def fit(self,X,tol=1e-05):
@@ -81,17 +81,17 @@ class MEEPC:
                 f_x = 0
                 u=0
                 f_x = self.calc_s(h,alpha_old,Z,u,i)
-                
+
                 if f_x == 1:
                     alpha[i] = u
-                
+
                 if f_x < 1:
 
                     alpha[i] = 0
 
                 if f_x > 1:
                     alpha[i] = self.helper(h,alpha_old,Z,1,i)
-                        
+
                 h = h + (alpha[i] - alpha_old[i])*Z[i]
                 # i += 1
                 # if i>=self.rows-1 :
@@ -107,9 +107,9 @@ class MEEPC:
                     updates = 0
                     stored_alpha_old = deepcopy(alpha)
         return 1/h,centroid
-            
+
         # while i < self.rows:
-        #     if converged:   
+        #     if converged:
         #         # return weights
         #         return 1/h,centroid
         #         # return h,alpha
@@ -117,17 +117,17 @@ class MEEPC:
         #     f_x = 0
         #     u=0
         #     f_x = self.calc_s(h,alpha_old,Z,u,i)
-            
+
         #     if f_x == 1:
         #         alpha[i] = u
-            
+
         #     if f_x < 1:
 
         #         alpha[i] = 0
 
         #     if f_x > 1:
         #         alpha[i] = self.helper(h,alpha_old,Z,1,i)
-                    
+
         #     h = h + (alpha[i] - alpha_old[i])*Z[i]
         #     i += 1
         #     if i>=self.rows-1 :

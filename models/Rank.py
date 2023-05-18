@@ -7,6 +7,7 @@ class Rank:
     def fit(self,X,threshold=10):
         # Compute the eigenvalues and eigenvectors of the matrix
         eigenvalues= np.linalg.eigvals(np.matmul(X, X.T))
+
         if(len(np.unique(eigenvalues))==1):
             return min(X.shape[0],X.shape[1])-1
 
@@ -17,7 +18,6 @@ class Rank:
             indices=np.where(sorted_eigenvalues>thresh)[0]
             r=len((list(indices)))
         else:
-            # r=len(sorted_eigenvalues)-1
               r=len(sorted_eigenvalues)
         return r
 

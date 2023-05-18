@@ -7,7 +7,7 @@ class Robustmeepc:
         self.meepc=MEEPC()
         pass
 
-    def fit(self,X,alpha_factor,beta_factor=.1):
+    def fit(self,X,alpha_factor,Labels=None,beta_factor=.1):
         n,d = X.shape
         alpha = int(alpha_factor*n)
         beta = round(beta_factor*alpha)
@@ -20,6 +20,16 @@ class Robustmeepc:
                 radii = np.sqrt(np.matmul(weight,var1.T))
                 idx = np.setdiff1d(np.arange(len(X)),np.argsort(radii)[-beta:])
                 X = X[idx]
+                if Labels is not None:
+
+                    attack_idx=np.where(Labels>0)[0]
+
+                    common_elements = np.isin( attack_idx , np.argsort(radii)[-beta:] )
+
+                    percentage = np.count_nonzero(common_elements) / len(attack_idx) * 100
+
+                    print("Percentage of attack points considered inactive in {}th: (MEEPC) iteration is {:.2f} %".format(i+1,percentage))
+
         weight,center = self.meepc.fit(X)
         return weight,center
 
