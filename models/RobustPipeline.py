@@ -106,6 +106,7 @@ class RobustPipeline:
             # r = 3
             self.clusterR.append(r)
             if self.y_train is not None:
+                
                 VT = self.pca.fit(cluster_,r,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
             else:
                 VT = self.pca.fit(cluster_,r,alpha)
@@ -130,6 +131,11 @@ class RobustPipeline:
 
 
     def get_data(self,X,corr=None,y_truth=None):
+        
+        if y_truth is not None:
+            labels = self.hankel.fit(np.array(y_truth),self.lag,self.stride)
+            self.y_train = np.any(labels>0,axis=0).astype(int)
+        
         if self.only_corr:
             if corr is not None:
                 X = self.hankel.fit(X,self.lag,self.stride)
@@ -143,11 +149,9 @@ class RobustPipeline:
             else:
                 print('No correlation matrix given to create hankel')
                 return
-        # X = df.iloc[:,sens].values
+        
         X = self.hankel.fit(X,self.lag,self.stride)
-        if y_truth is not None:
-            labels = self.hankel.fit(np.array(y_truth),self.lag,self.stride)
-            self.y_train = np.any(labels>0,axis=0).astype(int)
+       
         if (corr is not None):
             X=np.concatenate((X,corr),axis=0)
         X = X.T

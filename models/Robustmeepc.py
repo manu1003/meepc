@@ -25,10 +25,12 @@ class Robustmeepc:
                     attack_idx=np.where(Labels>0)[0]
 
                     common_elements = np.isin( attack_idx , np.argsort(radii)[-beta:] )
+                    print("common elements",common_elements)
+                    if len(attack_idx) != 0:
 
-                    percentage = np.count_nonzero(common_elements) / len(attack_idx) * 100
+                        percentage = np.count_nonzero(common_elements) / len(attack_idx) * 100
 
-                    print("Percentage of attack points considered inactive in {}th: (MEEPC) iteration is {:.2f} %".format(i+1,percentage))
+                        print("Percentage of attack points considered inactive in {}th: (MEEPC) iteration is {:.2f} %".format(i+1,percentage))
 
         weight,center = self.meepc.fit(X)
         return weight,center

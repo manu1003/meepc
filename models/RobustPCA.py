@@ -28,16 +28,15 @@ class RobustPCA:
         # check for what % of attack points is considered inactive in this iteration
 
         if Labels is not None:
-
+          print("labels length",len(Labels))
 
           attack_idx=np.where(Labels>0)[0]
 
           common_elements = np.isin( attack_idx , inactive_idx )
-          # print("attack idx",attack_idx)
-          # print("active idx",active_idx)
-          percentage = np.count_nonzero(common_elements) / len(attack_idx) * 100
+          if len(attack_idx) != 0:
+            percentage = np.count_nonzero(common_elements) / len(attack_idx) * 100
 
-          print("Percentage of attack points considered inactive in {}th: (PCA) iteration is {:.2f} %".format(kk+1,percentage))
+            print("Percentage of attack points considered inactive in {}th: (PCA) iteration is {:.2f} %".format(kk+1,percentage))
 
         U_new, Sigma_new, VT_new = svd(X_active)
         X_hat_active = np.dot(U_new[:, :r] , np.dot(np.diag(Sigma_new[:r]) , VT_new[:r, :]))
