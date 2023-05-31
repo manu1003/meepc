@@ -3,23 +3,34 @@ from scipy.linalg import svd
 from copy import deepcopy
 class RobustPCA:
   def __init__(self) -> None:
+      self.inactive_idx=[]
       pass
 
   def fit(self,X, r, alpha,Labels=None, max_iter=1000, tol=1e-4):
       n, d = X.shape
       alpha=int(alpha*n)
       U, Sigma, VT = svd(X)
-      X_hat = U[:, :r]@ np.diag(Sigma[:r]) @ VT[:r, :]
+      X_hat = U[:, :r] @ np.diag(Sigma[:r]) @ VT[:r, :]
       E = X - X_hat
       err = np.linalg.norm(E, axis=1) #reconstruction error
       V_old=VT
+
+      common_elements = np.array([])
+
       if alpha == 0:
          return V_old
+
+      if Labels is not None:
+        attack_idx=np.where(Labels>0)[0]
+
+      print("Robust PCA iterations")
+
       for kk in range(max_iter):
 
         # Set aside alpha fraction
         inactive_idx = np.setdiff1d(np.arange(n), np.argsort(err)[:-alpha])
         X_inactive = X[inactive_idx, :]
+
 
         # indices of active pts.
         active_idx = np.setdiff1d(np.arange(n), inactive_idx)
@@ -28,15 +39,12 @@ class RobustPCA:
         # check for what % of attack points is considered inactive in this iteration
 
         if Labels is not None:
-          print("labels length",len(Labels))
 
-          attack_idx=np.where(Labels>0)[0]
-
-          common_elements = np.isin( attack_idx , inactive_idx )
           if len(attack_idx) != 0:
-            percentage = np.count_nonzero(common_elements) / len(attack_idx) * 100
 
-            print("Percentage of attack points considered inactive in {}th: (PCA) iteration is {:.2f} %".format(kk+1,percentage))
+              common_elements = np.intersect1d( attack_idx , inactive_idx )
+              print("recall in this iteration",len(common_elements)/len(attack_idx))
+
 
         U_new, Sigma_new, VT_new = svd(X_active)
         X_hat_active = np.dot(U_new[:, :r] , np.dot(np.diag(Sigma_new[:r]) , VT_new[:r, :]))
@@ -55,4 +63,9 @@ class RobustPCA:
         err = np.linalg.norm(np.concatenate((E_active,E_inactive),axis=0),axis=1)
         X = np.concatenate((X_active,X_inactive),axis=0)
         V_old=deepcopy(VT_new)
-      return V_old
+
+      if Labels is not None and len(attack_idx) != 0:
+          print("------[PCA] attack points found is {} ".format(len(common_elements)))
+
+
+      return V_old,len(common_elements),inactive_idx

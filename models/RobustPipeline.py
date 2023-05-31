@@ -32,6 +32,12 @@ class RobustPipeline:
         self.y_predicted = None
         self.y_score = None
         self.y_train= None
+        self.cluster_idx=None
+        self.pca_idx= []
+        self.counts_meepc=0
+        self.attack_idx_k_wise = []
+        self.total_pca_attacks=0
+        self.total_meepc_attacks=0
 
 
     def getCenter(self,X):
@@ -79,7 +85,7 @@ class RobustPipeline:
         fp = n_neg - np.cumsum(neg_temp)
         fmeas = (2*tp )/ (2*tp + fp + fn)
         idx = np.argmax(fmeas)
-        # return min( np.max( radii_n ), radiis[indices[idx]] )
+        # return min( np.max( radii_n ), radiis[indices[idx]])
         return radiis[indices[idx]]
 
 
@@ -100,42 +106,63 @@ class RobustPipeline:
 
     def calc_normal_variables(self,X,alpha):
         radii_normal = []
+        attack_points=[]
+        # Store the indices of data points assigned to each cluster
+
+        cluster_indices = [[] for _ in range(len(self.labels))]
+        for i, assignment in enumerate(self.labels):
+            cluster_indices[assignment].append(i)
+
+
         for i in np.unique(self.labels):
             cluster_ = X[np.where(self.labels == i)[0]]
             r = self.rank.fit(cluster_)
-            # r = 3
+
             self.clusterR.append(r)
+        #PCA
             if self.y_train is not None:
-                
-                VT = self.pca.fit(cluster_,r,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
+                VT,pca_count,pca_alpha_idx= self.pca.fit(cluster_,r,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
+                self.total_pca_attacks += pca_count
+                attack_points.append(list(pca_alpha_idx))
+                print("total attack found yet",self.total_pca_attacks)
             else:
-                VT = self.pca.fit(cluster_,r,alpha)
-            print("               PCA done")
+                VT,temp1 = self.pca.fit(cluster_,r,alpha)
+
             V = VT.T
             self.clusterV.append(V)
             cluster_ = np.matmul(cluster_,V[:,:r])
+        #MEEPC
             if self.use_gekko:
                 weight,center = self.getW(cluster_)
             else:
                 if self.y_train is not None:
-                    weight,center = self.meepc.fit(cluster_,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
+                    weight,center,counts = self.meepc.fit(cluster_,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
+                    self.counts_meepc += counts
+
                 else:
-                    weight,center = self.meepc.fit(cluster_,alpha)
-            print("               Meepc done")
+                    weight,center,temp2 = self.meepc.fit(cluster_,alpha)
+
             self.weights.append(weight)
             self.centers.append(center)
             var1=np.square(cluster_-center)
             var2=np.matmul(weight,var1.T)
             radii_normal.append(np.sqrt(var2))
+
+
+
+        # Map the indexes of attack points back to the original dataset
+        mapped_attack_indices = []
+
+        for cluster_index, attack_indices in enumerate(attack_points):
+            original_indices = [cluster_indices[cluster_index][attack_index] for attack_index in attack_indices]
+            mapped_attack_indices.append(original_indices)
+        self.pca_idx = mapped_attack_indices
+
         return radii_normal
 
 
     def get_data(self,X,corr=None,y_truth=None):
-        
-        if y_truth is not None:
-            labels = self.hankel.fit(np.array(y_truth),self.lag,self.stride)
-            self.y_train = np.any(labels>0,axis=0).astype(int)
-        
+
         if self.only_corr:
             if corr is not None:
                 X = self.hankel.fit(X,self.lag,self.stride)
@@ -149,9 +176,11 @@ class RobustPipeline:
             else:
                 print('No correlation matrix given to create hankel')
                 return
-        
+        # X = df.iloc[:,sens].values
         X = self.hankel.fit(X,self.lag,self.stride)
-       
+        if y_truth is not None:
+            labels = self.hankel.fit(np.array(y_truth),self.lag,self.stride)
+            self.y_train = np.any(labels>0,axis=0).astype(int)
         if (corr is not None):
             X=np.concatenate((X,corr),axis=0)
         X = X.T
@@ -167,15 +196,21 @@ class RobustPipeline:
 
         # train on normal data and get all required variables on it
         X = self.get_data(train_normal,corr_normal,y_truth=y_truth)
-        # ,sens)
+
         optimal_k = min(optimal_k,len(np.unique(X)))
         if y_truth is not None:
-            self.cluster_centers,self.labels = self.robustcluster.fit(X,optimal_k,alpha,Labels = self.y_train)
-        else:
-            self.cluster_centers,self.labels = self.robustcluster.fit(X,optimal_k,alpha)
+            attack_idx=np.where(self.y_train>0)[0]
+            print("Total attack data points is {} out of {}".format(len(attack_idx),len(self.y_train)))
+            self.cluster_centers,self.labels,self.cluster_idx = self.robustcluster.fit(X,optimal_k,alpha,Labels = self.y_train)
 
-        print("Clustering Done")
+
+        else:
+            self.cluster_centers,self.labels,_ = self.robustcluster.fit(X,optimal_k,alpha)
+
+        # print("Clustering Done")
         self.optimal_k = len(np.unique(self.labels))
+
+
 
         self.radii_normal = self.calc_normal_variables(X,alpha)
 
