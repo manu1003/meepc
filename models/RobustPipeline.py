@@ -37,7 +37,7 @@ class RobustPipeline:
         self.counts_meepc=0
         self.attack_idx_k_wise = []
         self.total_pca_attacks=0
-        self.total_meepc_attacks=0
+        self.total_meepc_attacks=[]
 
 
     def getCenter(self,X):
@@ -121,9 +121,10 @@ class RobustPipeline:
             self.clusterR.append(r)
         #PCA
             if self.y_train is not None:
-                VT,pca_count,pca_alpha_idx= self.pca.fit(cluster_,r,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
+                VT,pca_count,pca_alpha_idx= self.pca.fit(cluster_,r,alpha,Labels=self.y_train[np.where(self.labels == i)[0]],cluster_index=np.asarray(cluster_indices[i]))
+                print("length of pca active indx are ",len(pca_alpha_idx))
                 self.total_pca_attacks += pca_count
-                attack_points.append(list(pca_alpha_idx))
+                self.pca_idx.append(pca_alpha_idx)
                 print("total attack found yet",self.total_pca_attacks)
             else:
                 VT,temp1 = self.pca.fit(cluster_,r,alpha)
@@ -136,11 +137,12 @@ class RobustPipeline:
                 weight,center = self.getW(cluster_)
             else:
                 if self.y_train is not None:
-                    weight,center,counts = self.meepc.fit(cluster_,alpha,Labels=self.y_train[np.where(self.labels == i)[0]])
+                    weight,center,counts,meepc_attacks = self.meepc.fit(cluster_,alpha,Labels=self.y_train[np.where(self.labels == i)[0]],cluster_index=np.asarray(cluster_indices[i]))
                     self.counts_meepc += counts
+                    self.total_meepc_attacks.append(meepc_attacks)
 
                 else:
-                    weight,center,temp2 = self.meepc.fit(cluster_,alpha)
+                    weight,center,temp2,temp5 = self.meepc.fit(cluster_,alpha)
 
             self.weights.append(weight)
             self.centers.append(center)
@@ -153,10 +155,11 @@ class RobustPipeline:
         # Map the indexes of attack points back to the original dataset
         mapped_attack_indices = []
 
-        for cluster_index, attack_indices in enumerate(attack_points):
-            original_indices = [cluster_indices[cluster_index][attack_index] for attack_index in attack_indices]
-            mapped_attack_indices.append(original_indices)
-        self.pca_idx = mapped_attack_indices
+        # for cluster_index, attack_indices in enumerate(attack_points):
+        #     print()
+        #     original_indices = [cluster_indices[cluster_index][attack_index] for attack_index in attack_indices]
+        #     mapped_attack_indices.append(original_indices)
+        # self.pca_idx = mapped_attack_indices
 
         return radii_normal
 

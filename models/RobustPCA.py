@@ -6,7 +6,7 @@ class RobustPCA:
       self.inactive_idx=[]
       pass
 
-  def fit(self,X, r, alpha,Labels=None, max_iter=1000, tol=1e-4):
+  def fit(self,X, r, alpha,Labels=None,cluster_index = None ,max_iter=1000, tol=1e-4):
       n, d = X.shape
       alpha=int(alpha*n)
       U, Sigma, VT = svd(X)
@@ -68,4 +68,4 @@ class RobustPCA:
           print("------[PCA] attack points found is {} ".format(len(common_elements)))
 
 
-      return V_old,len(common_elements),inactive_idx
+      return V_old,len(common_elements),cluster_index[inactive_idx]
