@@ -9,12 +9,15 @@ class Robustmeepc:
         pass
 
     def fit(self,X,alpha_factor,Labels=None,cluster_index=None,beta_factor=.1):
+        # print(Labels)
+        # print(cluster_index)
         n,d = X.shape
         alpha = int(alpha_factor*n)
         beta = round(beta_factor*alpha)
+        # print("beta: ",beta)
         total_common = 0
         total_attack_meepc=[]
-        print("robust meepc iterations")
+        # print("robust meepc iterations")
         if beta != 0:
             max_iter = round(1/beta_factor)
 
@@ -23,24 +26,24 @@ class Robustmeepc:
                 #calculating radiis for all points
                 var1 = np.square(X-center)
                 radii = np.sqrt(np.matmul(weight,var1.T))
-                idx = np.setdiff1d(np.arange(len(X)),np.argsort(radii)[-beta:])
+                alpha_idx = np.argsort(radii)[-beta:]
+                idx = np.setdiff1d(np.arange(len(X)),alpha_idx)
                 X = X[idx]
 
                 if Labels is not None :
                     attack_idx=np.where(Labels>0)[0]
                     if len(attack_idx) != 0:
-                        alpha_idx = np.argsort(radii)[-beta:]
                         common_elements = np.intersect1d( attack_idx , alpha_idx )
                         total_common+=len(common_elements)
-                        print("recall in this iteration",total_common/len(attack_idx))
+                        # print("recall in this iteration",total_common/len(attack_idx))
 
-
+                    # print(len(cluster_index),alpha_idx)
                     Labels=Labels[idx]
                     total_attack_meepc.append(cluster_index[alpha_idx])
                     cluster_index=cluster_index[idx]
         weight,center = self.meepc.fit(X)
         if Labels is not None:
-            print(len(total_attack_meepc))
+            # print(len(total_attack_meepc))
             print("------[Meepc] attack points found is {} ".format(total_common))
 
         return weight,center,total_common,total_attack_meepc

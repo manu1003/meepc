@@ -9,7 +9,7 @@ class Robustcluster:
 
     def fit(self,X,optimal_k,alpha_factor,Labels=None,max_iter=10,tol=1e-10):
         alpha = round(alpha_factor*len(X))
-        #print("len of Labels:", len(Labels))
+        
         if Labels is not None:
             attack_idx=np.where(Labels>0)[0]
 
@@ -19,8 +19,8 @@ class Robustcluster:
         converged = False
 
 
-        print("robust clustering iterations")
-        for kk in range(max_iter):
+        # print("robust clustering iterations")
+        for _ in range(max_iter):
 
             # Assign data points to the nearest centroid
             distances = np.sqrt(np.sum(X - centroid_old[:,np.newaxis],axis=2)**2)
@@ -38,11 +38,11 @@ class Robustcluster:
 
             if Labels is not None and len(attack_idx) != 0:
 
-                alpha_idx=idx[-alpha:]
+                alpha_idx = idx[-alpha:]
 
                 common_elements = np.intersect1d(attack_idx , alpha_idx)
 
-                print("recall in this iteration",len(common_elements)/len(attack_idx))
+                # print("recall in this iteration",len(common_elements)/len(attack_idx))
 
 
             for i in range(optimal_k):
@@ -53,7 +53,6 @@ class Robustcluster:
             centroid_old = deepcopy(centroid_new)
         if Labels is not None:
             print("------[CLUSTER] attack points found is {} ".format(len(common_elements)))
-            # print("test cluster",len(alpha_idx))
 
         return centroid_new,labels,alpha_idx
 

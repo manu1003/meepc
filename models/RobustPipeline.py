@@ -49,7 +49,7 @@ class RobustPipeline:
     def getW(self,X):
         N=X.shape[0]
         d=X.shape[1]
-        print(N,d)
+        # print(N,d)
         m = GEKKO(remote=False)
         m.options.MAX_ITER=1000
         w = m.Array(m.Var,d,lb=0)
@@ -122,10 +122,10 @@ class RobustPipeline:
         #PCA
             if self.y_train is not None:
                 VT,pca_count,pca_alpha_idx= self.pca.fit(cluster_,r,alpha,Labels=self.y_train[np.where(self.labels == i)[0]],cluster_index=np.asarray(cluster_indices[i]))
-                print("length of pca active indx are ",len(pca_alpha_idx))
+                # print("length of pca active indx are ",len(pca_alpha_idx))
                 self.total_pca_attacks += pca_count
                 self.pca_idx.append(pca_alpha_idx)
-                print("total attack found yet",self.total_pca_attacks)
+                # print("total attack found yet",self.total_pca_attacks)
             else:
                 VT,temp1 = self.pca.fit(cluster_,r,alpha)
 
@@ -203,7 +203,7 @@ class RobustPipeline:
         optimal_k = min(optimal_k,len(np.unique(X)))
         if y_truth is not None:
             attack_idx=np.where(self.y_train>0)[0]
-            print("Total attack data points is {} out of {}".format(len(attack_idx),len(self.y_train)))
+            # print("Total attack data points is {} out of {}".format(len(attack_idx),len(self.y_train)))
             self.cluster_centers,self.labels,self.cluster_idx = self.robustcluster.fit(X,optimal_k,alpha,Labels = self.y_train)
 
 

@@ -18,12 +18,12 @@ class RobustPCA:
       common_elements = np.array([])
 
       if alpha == 0:
-         return V_old
+         return V_old,len(common_elements),[]
 
       if Labels is not None:
         attack_idx=np.where(Labels>0)[0]
 
-      print("Robust PCA iterations")
+      # print("Robust PCA iterations")
 
       for kk in range(max_iter):
 
@@ -43,10 +43,11 @@ class RobustPCA:
           if len(attack_idx) != 0:
 
               common_elements = np.intersect1d( attack_idx , inactive_idx )
-              print("recall in this iteration",len(common_elements)/len(attack_idx))
+              # print("recall in this iteration",len(common_elements)/len(attack_idx))
 
 
         U_new, Sigma_new, VT_new = svd(X_active)
+        r = min(r,U_new.shape[1])
         X_hat_active = np.dot(U_new[:, :r] , np.dot(np.diag(Sigma_new[:r]) , VT_new[:r, :]))
 
 
@@ -67,5 +68,5 @@ class RobustPCA:
       if Labels is not None and len(attack_idx) != 0:
           print("------[PCA] attack points found is {} ".format(len(common_elements)))
 
-
+          
       return V_old,len(common_elements),cluster_index[inactive_idx]
